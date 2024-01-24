@@ -205,9 +205,7 @@ public class TestLibrary {
         // Use an invalid ISBN
         when(mockDataBase.getBookByISBN(anyString())).thenReturn(null);  // Simulate the book not being found
         // Perform the action and assert that an IllegalArgumentException is thrown
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            library.returnBook(invalidBookISBN);
-        });
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> library.returnBook(invalidBookISBN));
         // Verify that the exception message is correct
         assertEquals("Invalid ISBN.", exception.getMessage());
         // Verify that the book's returnBook method is not called
@@ -315,9 +313,7 @@ public class TestLibrary {
         // Stubbing the user's sendNotification method to throw a NotificationException
         doThrow(new NotificationException("Notification failed!")).when(mockUser).sendNotification(anyString());
         // Perform the action and assert that a NotificationException is thrown
-        NotificationException exception = assertThrows(NotificationException.class, () -> {
-            library.notifyUserWithBookReviews(validBookISBN, validUserId);
-        });
+        NotificationException exception = assertThrows(NotificationException.class, () -> library.notifyUserWithBookReviews(validBookISBN, validUserId));
         // Verify that the exception message is correct
         assertEquals("Notification failed!", exception.getMessage());
         // Verify that the review service's getReviewsForBook method is called with the correct parameters
