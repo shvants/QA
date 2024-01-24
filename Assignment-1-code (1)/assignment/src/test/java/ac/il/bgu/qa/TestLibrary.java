@@ -143,9 +143,7 @@ public class TestLibrary {
         verify(mockBook, never()).borrow();
 
         // Perform the action and assert that an IllegalArgumentException is thrown
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            library.borrowBook(mockBook.getISBN(), mockUser.getId());
-        });
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> library.borrowBook(mockBook.getISBN(), mockUser.getId()));
 
         // Verify that the exception message is correct
         assertEquals("Invalid ISBN.", exception.getMessage());
@@ -159,9 +157,7 @@ public class TestLibrary {
         when(mockDataBase.getBookByISBN(mockBook.getISBN())).thenReturn(mockBook);  // Simulate the book being found
 
         // Perform the action and assert that an IllegalArgumentException is thrown
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            library.borrowBook(mockBook.getISBN(), mockUser.getId());
-        });
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> library.borrowBook(mockBook.getISBN(), mockUser.getId()));
 
         // Verify that the exception message is correct
         assertEquals("Invalid user Id.", exception.getMessage());
@@ -195,9 +191,7 @@ public class TestLibrary {
         // Simulate the book not being currently borrowed
         when(mockBook.isBorrowed()).thenReturn(false);
         // Perform the action and assert that a BookNotBorrowedException is thrown
-        BookNotBorrowedException exception = assertThrows(BookNotBorrowedException.class, () -> {
-            library.returnBook(mockBook.getISBN());
-        });
+        BookNotBorrowedException exception = assertThrows(BookNotBorrowedException.class, () -> library.returnBook(mockBook.getISBN()));
         // Verify that the exception message is correct
         assertEquals("Book wasn't borrowed!", exception.getMessage());
         // Verify that the book's returnBook method is not called
@@ -250,9 +244,7 @@ public class TestLibrary {
         // Stubbing the review service to return no reviews for the specified book
         when(mockReview.getReviewsForBook(validBookISBN)).thenReturn(Collections.emptyList());
         // Perform the action and assert that a NoReviewsFoundException is thrown
-        NoReviewsFoundException exception = assertThrows(NoReviewsFoundException.class, () -> {
-            library.notifyUserWithBookReviews(validBookISBN, validUserId);
-        });
+        NoReviewsFoundException exception = assertThrows(NoReviewsFoundException.class, () -> library.notifyUserWithBookReviews(validBookISBN, validUserId));
         // Verify that the exception message is correct
         assertEquals("No reviews found!", exception.getMessage());
         // Verify that the review service's getReviewsForBook method is called with the correct parameters
@@ -267,9 +259,7 @@ public class TestLibrary {
         // Stubbing the mock database to return a user for the given user ID
         when(mockDataBase.getUserById(validUserId)).thenReturn(mockUser);
         // Perform the action and assert that an InvalidISBNException is thrown
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            library.notifyUserWithBookReviews(invalidBookISBN, validUserId);
-        });
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> library.notifyUserWithBookReviews(invalidBookISBN, validUserId));
         // Verify that the exception message is correct
         assertEquals("Invalid ISBN.", exception.getMessage());
         // Verify that the review service's getReviewsForBook method is not called
@@ -286,9 +276,7 @@ public class TestLibrary {
         // Use an invalid user ID, assuming it won't be found in the database
         when(mockDataBase.getUserById(invalidUserId)).thenReturn(null);
         // Perform the action and assert that an InvalidUserIdException is thrown
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            library.notifyUserWithBookReviews(validBookISBN, invalidUserId);
-        });
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> library.notifyUserWithBookReviews(validBookISBN, invalidUserId));
         // Verify that the exception message is correct
         assertEquals("Invalid user Id.", exception.getMessage());
         // Verify that the review service's getReviewsForBook method is not called
@@ -307,9 +295,7 @@ public class TestLibrary {
         // Stubbing the review service to throw a ReviewServiceUnavailableException
         when(mockReview.getReviewsForBook(validBookISBN)).thenThrow(new ReviewServiceUnavailableException("Service unavailable"));
         // Perform the action and assert that a ReviewServiceUnavailableException is thrown
-        ReviewServiceUnavailableException exception = assertThrows(ReviewServiceUnavailableException.class, () -> {
-            library.notifyUserWithBookReviews(validBookISBN, validUserId);
-        });
+        ReviewServiceUnavailableException exception = assertThrows(ReviewServiceUnavailableException.class, () -> library.notifyUserWithBookReviews(validBookISBN, validUserId));
         // Verify that the exception message is correct
         assertEquals("Service unavailable", exception.getMessage());
         // Verify that the user's sendNotification method is not called (review service unavailable)
@@ -347,9 +333,7 @@ public class TestLibrary {
         // Stubbing the mock database to return a book for the given ISBN
         when(mockDataBase.getBookByISBN(validBookISBN)).thenReturn(mockBook);
         // Act and Assert
-        UserNotRegisteredException exception = assertThrows(UserNotRegisteredException.class, () -> {
-            library.notifyUserWithBookReviews(validBookISBN, validUserId);
-        });
+        UserNotRegisteredException exception = assertThrows(UserNotRegisteredException.class, () -> library.notifyUserWithBookReviews(validBookISBN, validUserId));
         // Verify that the exception message is correct
         assertEquals("User not found!", exception.getMessage());
         // Verify that the getUserById method is called with the correct parameter
