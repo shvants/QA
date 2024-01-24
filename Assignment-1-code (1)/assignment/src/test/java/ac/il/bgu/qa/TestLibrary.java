@@ -1,16 +1,14 @@
 package ac.il.bgu.qa;
 
 import ac.il.bgu.qa.errors.*;
-import ac.il.bgu.qa.services.*;;
+import ac.il.bgu.qa.services.*;
 import org.junit.jupiter.api.*;
 import org.mockito.*;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
