@@ -469,4 +469,98 @@ public class TestLibrary {
         verifyNoMoreInteractions(mockReview, mockUser);
     }
 
+    @Test
+    void GivenValidISBNAndValidUserId_WhenGetBookByISBN_ThenReturnBook() {
+        when(mockBook.isBorrowed()).thenReturn(false);
+        // Stubbing the mock book to return validBookTitle
+        when(mockBook.getTitle()).thenReturn(validBookTitle);
+        // Stubbing the mock database to return a book for the given ISBN
+        when(mockDataBase.getBookByISBN(validBookISBN)).thenReturn(mockBook);
+        // Stubbing the mock database to return a user for the given user ID
+        when(mockDataBase.getUserById(validUserId)).thenReturn(mockUser);
+        // Stubbing the review service to return reviews for the specified book
+        List<String> reviews = Arrays.asList("Great book!", "Must-read!");
+        when(mockReview.getReviewsForBook(validBookISBN)).thenReturn(reviews);
+
+        // Performing the action: retrieving a book by ISBN
+        Book result = library.getBookByISBN(validBookISBN, validUserId);
+
+        // Verifying that the expected interactions occurred
+        verify(mockDataBase, times(2)).getBookByISBN(validBookISBN);
+        verify(mockBook).isBorrowed();
+
+        // Asserting the result
+        assertNotNull(result);
+        assertEquals(mockBook, result);
+    }
+
+    @Test
+    void GivenInvalidISBN_WhenGetBookByISBN_ThenThrowIllegalArgumentException() {
+        // Performing the action and asserting that an IllegalArgumentException is thrown
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> library.getBookByISBN(invalidBookISBN, invalidUserId));
+        // Verifying that the exception message is correct
+        assertEquals("Invalid ISBN.", exception.getMessage());
+        // Verifying that no interactions occurred with the database service
+        verifyNoInteractions(mockDataBase);
+    }
+
+    @Test
+    void GivenInvalidUserIdFormat_WhenGetBookByISBN_ThenThrowIllegalArgumentException() {
+        // Performing the action and asserting that an IllegalArgumentException is thrown
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> library.getBookByISBN(validBookISBN, invalidUserId));
+        // Verifying that the exception message is correct
+        assertEquals("Invalid user Id.", exception.getMessage());
+        // Verifying that no interactions occurred with the database service
+        verifyNoInteractions(mockDataBase);
+    }
+
+    @Test
+    void GivenBookNotFoundForISBN_WhenGetBookByISBN_ThenThrowBookNotFoundException() {
+        // Mocking the necessary objects and their behaviors
+        when(mockDataBase.getBookByISBN(validBookISBN)).thenReturn(null);
+        // Performing the action and asserting that a BookNotFoundException is thrown
+        BookNotFoundException exception = assertThrows(BookNotFoundException.class, () -> library.getBookByISBN(validBookISBN, validUserId));
+        // Verifying that the exception message is correct
+        assertEquals("Book not found!", exception.getMessage());
+        // Verifying the interaction with the database service
+        verify(mockDataBase).getBookByISBN(validBookISBN);
+        verifyNoMoreInteractions(mockDataBase);
+    }
+
+    @Test
+    void GivenBorrowedBookForISBN_WhenGetBookByISBN_ThenThrowBookAlreadyBorrowedException() {
+        // Mocking the necessary objects and their behaviors
+        when(mockBook.isBorrowed()).thenReturn(true);
+        when(mockDataBase.getBookByISBN(validBookISBN)).thenReturn(mockBook);
+        // Performing the action and asserting that a BookAlreadyBorrowedException is thrown
+        BookAlreadyBorrowedException exception = assertThrows(BookAlreadyBorrowedException.class, () -> library.getBookByISBN(validBookISBN, validUserId));
+        // Verifying that the exception message is correct
+        assertEquals("Book was already borrowed!", exception.getMessage());
+        // Verifying the interactions with the database service and the book
+        verify(mockDataBase).getBookByISBN(validBookISBN);
+        verify(mockBook).isBorrowed();
+        verifyNoMoreInteractions(mockDataBase, mockBook);
+    }
+
+    @Test
+    void GivenNotificationFailure_WhenGetBookByISBN_ThenContinueAndReturnBook() {
+        // Creating a spy of the library instance
+        Library librarySpy = spy(library);
+        // Mocking the necessary objects and their behaviors
+        when(mockBook.isBorrowed()).thenReturn(false);
+        when(mockDataBase.getBookByISBN(validBookISBN)).thenReturn(mockBook);
+        // Stubbing the notifyUserWithBookReviews to throw an exception
+        doThrow(new RuntimeException("Notification failed!")).when(librarySpy).notifyUserWithBookReviews(validBookISBN, validUserId);
+        // Performing the action: retrieving a book by ISBN
+        Book result = librarySpy.getBookByISBN(validBookISBN, validUserId);
+        // Verifying that the expected interactions occurred
+        verify(mockDataBase, times(1)).getBookByISBN(validBookISBN);
+        verify(mockBook).isBorrowed();
+        verify(librarySpy, times(1)).notifyUserWithBookReviews(validBookISBN, validUserId);
+        // Asserting the result
+        assertNotNull(result);
+        assertEquals(mockBook, result);
+    }
+
+
 }
