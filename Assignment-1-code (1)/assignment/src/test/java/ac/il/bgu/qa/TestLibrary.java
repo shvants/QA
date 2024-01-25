@@ -42,68 +42,201 @@ public class TestLibrary {
     @BeforeEach
     public void init() {
         MockitoAnnotations.openMocks(this);
-        library = new Library(mockDataBase,mockReview);
+        library = new Library(mockDataBase, mockReview);
     }
 
-
+    /**
+     * Test to ensure that a valid book is successfully added to the library.
+     * Validates if the addBook method correctly interacts with the database to add the book.
+     */
     @Test
-    void GivenBook_WhenAddBook_ThenSuccess() {
-
-        when(mockBook.getISBN()).thenReturn("9780306406157");
-        when(mockBook.getTitle()).thenReturn("VV");
-        when(mockBook.getAuthor()).thenReturn("V");
+    void GivenValidBook_WhenAddBook_ThenSuccess() {
+        when(mockBook.getISBN()).thenReturn(validBookISBN);
+        when(mockBook.getTitle()).thenReturn(validBookTitle);
+        when(mockBook.getAuthor()).thenReturn(validAuthor);
         when(mockBook.isBorrowed()).thenReturn(false);
-        when(mockDataBase.getBookByISBN("9780306406157")).thenReturn(null);
+        when(mockDataBase.getBookByISBN(validBookISBN)).thenReturn(null);
+
         library.addBook(mockBook);
-        verify(mockDataBase).addBook("9780306406157", mockBook); //Integration
+
+        verify(mockDataBase).addBook(validBookISBN, mockBook); // Verify the interaction
     }
 
+    /**
+     * Test to ensure that adding a book with an invalid ISBN throws an IllegalArgumentException.
+     */
     @Test
-    void AddInvalidBookISBNUnsuccessfully() {
-
-        when(mockBook.getISBN()).thenReturn("1234567891234");
-        when(mockBook.getTitle()).thenReturn("VV");
-        when(mockBook.getAuthor()).thenReturn("V");
+    void GivenInvalidISBN_WhenAddBook_ThenThrowIllegalArgumentException() {
+        when(mockBook.getISBN()).thenReturn(invalidBookISBN);
+        when(mockBook.getTitle()).thenReturn(validBookTitle);
+        when(mockBook.getAuthor()).thenReturn(validAuthor);
         when(mockBook.isBorrowed()).thenReturn(false);
         when(mockDataBase.getBookByISBN(anyString())).thenReturn(null);
 
         assertThrows(IllegalArgumentException.class, () -> library.addBook(mockBook), "Invalid ISBN.");
     }
 
+    /**
+     * Test to ensure that adding a book with a valid ISBN but an invalid title throws an IllegalArgumentException.
+     */
     @Test
-    void AddValidBookISBNInvalidBookTitleUnsuccessfully() {
-
-        when(mockBook.getISBN()).thenReturn("9780306406157");
-        when(mockBook.getTitle()).thenReturn("");
-        when(mockBook.getAuthor()).thenReturn("V");
+    void GivenValidISBNAndInvalidTitle_WhenAddBook_ThenThrowIllegalArgumentException() {
+        when(mockBook.getISBN()).thenReturn(validBookISBN);
+        when(mockBook.getTitle()).thenReturn(invalidBookTitle);
+        when(mockBook.getAuthor()).thenReturn(validAuthor);
         when(mockBook.isBorrowed()).thenReturn(false);
         when(mockDataBase.getBookByISBN(anyString())).thenReturn(null);
 
         assertThrows(IllegalArgumentException.class, () -> library.addBook(mockBook), "Invalid title.");
     }
 
+    /**
+     * Test to ensure that adding a book with a valid ISBN, title, but an invalid author (empty name) throws an IllegalArgumentException.
+    */
     @Test
-    void AddValidBookISBNvalidBookTitleInvalidBookAuthorUnsuccessfully() {
-
-        when(mockBook.getISBN()).thenReturn("9780306406157");
-        when(mockBook.getTitle()).thenReturn("V");
-        when(mockBook.getAuthor()).thenReturn("");
+    void GivenValidISBNAndTitleAndInvalidAuthor_WhenAddBook_ThenThrowIllegalArgumentException() {
+        when(mockBook.getISBN()).thenReturn(validBookISBN);
+        when(mockBook.getTitle()).thenReturn(validBookTitle);
+        when(mockBook.getAuthor()).thenReturn(invalidAuthor);
         when(mockBook.isBorrowed()).thenReturn(false);
         when(mockDataBase.getBookByISBN(anyString())).thenReturn(null);
 
         assertThrows(IllegalArgumentException.class, () -> library.addBook(mockBook), "Invalid author.");
     }
-    @Test
-    void AddValidBookISBNValidBookTitleValidBookAuthorInvalidBorrowedUnsuccessfully() {
 
-        when(mockBook.getISBN()).thenReturn("9780306406157");
-        when(mockBook.getTitle()).thenReturn("V");
-        when(mockBook.getAuthor()).thenReturn("VV");
+    /**
+     * Test to ensure that adding a book that is already borrowed throws an IllegalArgumentException.
+     */
+    @Test
+    void GivenValidISBNAndTitleAndAuthorButBookIsBorrowed_WhenAddBook_ThenThrowIllegalArgumentException() {
+        when(mockBook.getISBN()).thenReturn(validBookISBN);
+        when(mockBook.getTitle()).thenReturn(validBookTitle);
+        when(mockBook.getAuthor()).thenReturn(validAuthor);
         when(mockBook.isBorrowed()).thenReturn(true);
         when(mockDataBase.getBookByISBN(anyString())).thenReturn(null);
 
         assertThrows(IllegalArgumentException.class, () -> library.addBook(mockBook), "Book with invalid borrowed state.");
     }
+
+    /**
+     * Test to ensure that adding a book withInvalidISBN (as letters error) throws an IllegalArgumentException.
+     * this way we test InvalidIsbn method (its private)
+     */
+    @Test
+    void GivenBookWithInvalidISBNFormat_WhenAddBook_ThenThrowIllegalArgumentException() {
+        String invalidISBN = "InvalidISBN";
+        when(mockBook.getISBN()).thenReturn(invalidISBN);
+        when(mockBook.getTitle()).thenReturn(validBookTitle);
+        when(mockBook.getAuthor()).thenReturn(validAuthor);
+        when(mockBook.isBorrowed()).thenReturn(false);
+
+        assertThrows(IllegalArgumentException.class, () -> library.addBook(mockBook), "Invalid ISBN.");
+    }
+
+
+    /**
+     * Test to ensure that adding a book with Invalid Author Name (as symboles) throws an IllegalArgumentException.
+     * this way we test validAuthor method (its private)
+     */
+    @Test
+    void GivenBookWithInvalidAuthorName_WhenAddBook_ThenThrowIllegalArgumentException() {
+        String invalidAuthorName = "!!Invalid@@Name##";
+        when(mockBook.getISBN()).thenReturn(validBookISBN);
+        when(mockBook.getTitle()).thenReturn(validBookTitle);
+        when(mockBook.getAuthor()).thenReturn(invalidAuthorName);
+        when(mockBook.isBorrowed()).thenReturn(false);
+
+        assertThrows(IllegalArgumentException.class, () -> library.addBook(mockBook), "Invalid author.");
+    }
+
+    /**
+     * Test to ensure that adding a book with Invalid Author Name (as as consecutive special characters) throws an IllegalArgumentException.
+     * validAuthor
+     */
+    @Test
+    void GivenBookWithAuthorNameHavingConsecutiveSpecialCharacters_WhenAddBook_ThenThrowIllegalArgumentException() {
+        String AuthorInvalidName = "Shlomi--Arbitman";
+        when(mockBook.getISBN()).thenReturn(validBookISBN);
+        when(mockBook.getTitle()).thenReturn(validBookTitle);
+        when(mockBook.getAuthor()).thenReturn(AuthorInvalidName);
+        when(mockBook.isBorrowed()).thenReturn(false);
+
+        assertThrows(IllegalArgumentException.class, () -> library.addBook(mockBook), "Invalid author.");
+    }
+
+
+    /**
+     * Test to ensure that a valid user can register successfully.
+     */
+    @Test
+    void GivenValidUser_WhenRegisterUser_ThenSuccess() {
+        when(mockUser.getId()).thenReturn(validUserId);
+        when(mockUser.getName()).thenReturn("Valid User");
+        when(mockUser.getNotificationService()).thenReturn(mockNotification);
+        when(mockDataBase.getUserById(validUserId)).thenReturn(null);
+
+        library.registerUser(mockUser);
+
+        verify(mockDataBase).registerUser(validUserId, mockUser); // Verify that the user is registered
+    }
+
+    /**
+     * Test to ensure that registering a null user throws an IllegalArgumentException.
+     */
+    @Test
+    void GivenNullUser_WhenRegisterUser_ThenThrowIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () -> library.registerUser(null), "Invalid user.");
+    }
+
+    /**
+     * Test to ensure that registering a user with an invalid ID throws an IllegalArgumentException.
+     */
+    @Test
+    void GivenInvalidUserId_WhenRegisterUser_ThenThrowIllegalArgumentException() {
+        when(mockUser.getId()).thenReturn(invalidUserId);
+        when(mockUser.getName()).thenReturn("Valid User");
+        when(mockUser.getNotificationService()).thenReturn(mockNotification);
+
+        assertThrows(IllegalArgumentException.class, () -> library.registerUser(mockUser), "Invalid user Id.");
+    }
+
+    /**
+     * Test to ensure that registering a user with an invalid name throws an IllegalArgumentException.
+     */
+    @Test
+    void GivenInvalidUserName_WhenRegisterUser_ThenThrowIllegalArgumentException() {
+        when(mockUser.getId()).thenReturn(validUserId);
+        when(mockUser.getName()).thenReturn("");
+        when(mockUser.getNotificationService()).thenReturn(mockNotification);
+
+        assertThrows(IllegalArgumentException.class, () -> library.registerUser(mockUser), "Invalid user name.");
+    }
+
+    /**
+     * Test to ensure that attempting to register an already existing user throws an IllegalArgumentException.
+     */
+    @Test
+    void GivenExistingUser_WhenRegisterUser_ThenThrowIllegalArgumentException() {
+        when(mockUser.getId()).thenReturn(validUserId);
+        when(mockUser.getName()).thenReturn("Valid User");
+        when(mockUser.getNotificationService()).thenReturn(mockNotification);
+        when(mockDataBase.getUserById(validUserId)).thenReturn(mockUser); // User already exists
+
+        assertThrows(IllegalArgumentException.class, () -> library.registerUser(mockUser), "User already exists.");
+    }
+
+    /**
+     * Test to ensure that registering a user with an invalid notification service throws an IllegalArgumentException.
+     */
+    @Test
+    void GivenInvalidNotificationService_WhenRegisterUser_ThenThrowIllegalArgumentException() {
+        when(mockUser.getId()).thenReturn(validUserId);
+        when(mockUser.getName()).thenReturn("Valid User");
+        when(mockUser.getNotificationService()).thenReturn(null);
+
+        assertThrows(IllegalArgumentException.class, () -> library.registerUser(mockUser), "Invalid notification service.");
+    }
+
 
 
 
